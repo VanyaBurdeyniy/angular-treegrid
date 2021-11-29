@@ -1,7 +1,20 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { TreeGridModule } from '@syncfusion/ej2-angular-treegrid';
-import { PageService, SortService, FilterService } from '@syncfusion/ej2-angular-treegrid';
+import { TreeGridAllModule, TreeGridComponent } from '@syncfusion/ej2-angular-treegrid';
+import { DialogModule } from '@syncfusion/ej2-angular-popups';
+
+import { DropDownListAllModule, MultiSelectAllModule } from '@syncfusion/ej2-angular-dropdowns';
+
+import { ToolbarModule, ToolbarAllModule } from '@syncfusion/ej2-angular-navigations';
+
+import { ButtonAllModule , CheckBoxAllModule} from '@syncfusion/ej2-angular-buttons';
+
+import { DatePickerModule, DatePickerAllModule } from '@syncfusion/ej2-angular-calendars';
+import { NumericTextBoxAllModule } from '@syncfusion/ej2-angular-inputs';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
+import { PageService, SortService, FilterService, EditService, FreezeService,
+  ExcelExportService, PdfExportService, ContextMenuService, ToolbarService } from '@syncfusion/ej2-angular-treegrid';
 import { AppComponent } from './app.component';
 
 @NgModule({
@@ -10,9 +23,21 @@ import { AppComponent } from './app.component';
   ],
   imports: [
     BrowserModule,
-    TreeGridModule
+    TreeGridAllModule,
+    NumericTextBoxAllModule,
+    ToolbarModule,
+    DropDownListAllModule,
+    ButtonAllModule,
+    DialogModule,
+    MultiSelectAllModule,
+    CheckBoxAllModule,
+    ReactiveFormsModule,
+    FormsModule,
+    DatePickerModule
   ],
-  providers: [PageService, SortService, FilterService],
+  providers: [PageService, SortService, FilterService, EditService,
+    ExcelExportService, PdfExportService, ContextMenuService, TreeGridComponent,
+    ToolbarService, FreezeService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
