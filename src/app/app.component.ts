@@ -7,6 +7,8 @@ import { BeforeOpenCloseEventArgs } from '@syncfusion/ej2-inputs';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { DialogEditEventArgs } from '@syncfusion/ej2-angular-grids';
 import { Dialog } from '@syncfusion/ej2-popups';
+import { Button } from '@syncfusion/ej2-buttons';
+import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 
 @Component({
   selector: 'app-root',
@@ -43,7 +45,8 @@ export class AppComponent implements OnInit {
           'http://localhost:8080/file',
       // 'https://ej2services.syncfusion.com/production/web-services/api/SelfReferenceData',
       adaptor: new WebApiAdaptor(),
-      crossDomain: true
+      crossDomain: true,
+      dataType: 'json'
     });
     this.filterSettings = { type: 'FilterBar', hierarchyMode: 'Parent', mode: 'Immediate' }
     this.editing = { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Dialog' };
@@ -71,11 +74,69 @@ export class AppComponent implements OnInit {
       { text: 'Cut', target: '.e-content', id: 'customCut' },
       { text: 'Paste', target: '.e-content', id: 'customPaste' }
     ]
+    console.log(this.treegrid);
   }
 
   contextMenuOpen (args: { rowInfo: { rowIndex: number; cellIndex: number; }; }): void {
     this.rowIndex = args.rowInfo.rowIndex;
     this.cellIndex = args.rowInfo.cellIndex;
+    console.log(this.treegrid);
+  }
+
+  showDialog (): void {
+    let dialogObj: Dialog = new Dialog({
+      width: '335px',
+      header: 'Software Update',
+      content: 'Your current software version is up to date.',
+      target: document.getElementById('target'),
+      isModal: true,
+      animationSettings: { effect: 'None' },
+      buttons: [{
+        click: dlgButtonClick,
+        buttonModel: { content: 'OK', isPrimary: true }
+      }],
+      open: dialogOpen,
+      close: dialogClose
+    });
+    dialogObj.appendTo('#modalDialog');
+    // document.getElementById('dialogBtn').focus();
+
+    // let checkBoxObj: CheckBox = new CheckBox({ checked: false, change: onChange });
+    // checkBoxObj.appendTo('#checkbox');
+    dialogObj.show();
+    // Button has been created to open the modal Dialog
+    // let button: Button = new Button({
+    // });
+    // button.appendTo('#dialogBtn');
+    // document.getElementById('dialogBtn').onclick = (): void => {
+    //   dialogObj.show();
+    // };
+
+    function dlgButtonClick(): void {
+      dialogObj.hide();
+    }
+
+    // 'Open' Button will be shown, if modal Dialog is closed
+    function dialogClose(): void {
+      // document.getElementById('dialogBtn').style.display = 'block';
+    }
+
+    // 'Open' Button will be hidden, if modal Dialog is opened
+    function dialogOpen(): void {
+      // document.getElementById('dialogBtn').style.display = 'none';
+    }
+    // Dialog will be closed, while clicking on overlay
+    // function onChange(args: ChangeEventArgs): void {
+    //   if (args.checked) {
+    //     dialogObj.overlayClick = (): void => {
+    //       dialogObj.hide();
+    //     };
+    //   } else {
+    //     dialogObj.overlayClick = (): void => {
+    //       dialogObj.show();
+    //     };
+    //   }
+    // }
   }
 
   contextMenuClick (args?: MenuEventArgs): void {
@@ -90,9 +151,10 @@ export class AppComponent implements OnInit {
         this.treegrid.refresh();
         break;
       case 'insert':
-        let columnName = { field: 'New Column', width: 100 };
-        this.treegrid.columns.push(columnName); // Insert Columns
-        this.treegrid.refreshColumns(); // Refresh Columns
+        // let columnName = { field: 'New Column', width: 100 };
+        // this.treegrid.columns.push(columnName); // Insert Columns
+        // this.treegrid.refreshColumns(); // Refresh Columns
+          this.showDialog();
         break;
       case 'delete':
         // @ts-ignore
