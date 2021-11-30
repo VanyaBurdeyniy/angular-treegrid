@@ -86,15 +86,19 @@ export class AppComponent implements OnInit {
   showDialog (): void {
     let dialogObj: Dialog = new Dialog({
       width: '335px',
-      header: 'Software Update',
-      content: 'Your current software version is up to date.',
+      header: 'Create column',
+      content: '<label>Column Name</label><input type="text" name="columnName">',
       target: document.getElementById('target'),
       isModal: true,
       animationSettings: { effect: 'None' },
       buttons: [{
         click: dlgButtonClick,
         buttonModel: { content: 'OK', isPrimary: true }
-      }],
+      },
+        {
+          click: dialogClose,
+          buttonModel: { content: 'CANCEL', isPrimary: true }
+        }],
       open: dialogOpen,
       close: dialogClose
     });
@@ -113,12 +117,14 @@ export class AppComponent implements OnInit {
     // };
 
     function dlgButtonClick(): void {
+      document.getElementById('modalDialog').innerHTML = '';
       dialogObj.hide();
     }
 
     // 'Open' Button will be shown, if modal Dialog is closed
     function dialogClose(): void {
-      // document.getElementById('dialogBtn').style.display = 'block';
+      document.getElementById('modalDialog').innerHTML = '';
+      dialogObj.hide();
     }
 
     // 'Open' Button will be hidden, if modal Dialog is opened
