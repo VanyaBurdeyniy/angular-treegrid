@@ -49,7 +49,7 @@ export class AppComponent implements OnInit {
     let me = this;
     this.dataManager = new DataManager({
       url:
-          'http://localhost:8080/file',
+          'http://185.233.117.219:8080/file',
       // 'https://ej2services.syncfusion.com/production/web-services/api/SelfReferenceData',
       adaptor: new WebApiAdaptor(),
       crossDomain: true,
@@ -82,7 +82,7 @@ export class AppComponent implements OnInit {
       { text: 'Paste', target: '.e-content', id: 'customPaste' }
     ]
 
-    this.http.get('http://localhost:8080/columns').subscribe(data => {
+    this.http.get('http://185.233.117.219:8080/columns').subscribe(data => {
       me.columns = data;
     });
   }
@@ -120,7 +120,7 @@ export class AppComponent implements OnInit {
       // @ts-ignore
       let val = document.querySelector('input[name="columnName"]')['value'];
       document.getElementById('modalDialog').innerHTML = '';
-      me.http.post('http://localhost:8080/columns', {headerText: val, field: val.replace(/\s/g, "")}).subscribe(data => {
+      me.http.post('http://185.233.117.219:8080/columns', {headerText: val, field: val.replace(/\s/g, "")}).subscribe(data => {
         me.columns = data;
         console.log(data);
       });
