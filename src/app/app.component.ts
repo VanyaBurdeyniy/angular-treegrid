@@ -9,6 +9,10 @@ import { DialogEditEventArgs } from '@syncfusion/ej2-angular-grids';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
 import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
+import { HttpClient } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, retry } from 'rxjs/operators';
+import {maxWorkers} from "@angular-devkit/build-angular/src/utils/environment-options";
 
 @Component({
   selector: 'app-root',
@@ -31,15 +35,18 @@ export class AppComponent implements OnInit {
   public sortSettings: Object;
   public selectionSettings: any = {};
   public rows: Object[] = [];
+  public columns: any = [];
+  public columnName: string;
   // Cut
   private moveRow: any = null;
 
 // Copy/Paste
   private clone: any = null;
 
-  constructor() {}
+  constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
+    let me = this;
     this.dataManager = new DataManager({
       url:
           'http://localhost:8080/file',
@@ -74,7 +81,10 @@ export class AppComponent implements OnInit {
       { text: 'Cut', target: '.e-content', id: 'customCut' },
       { text: 'Paste', target: '.e-content', id: 'customPaste' }
     ]
-    console.log(this.treegrid);
+
+    this.http.get('http://localhost:8080/columns').subscribe(data => {
+      me.columns = data;
+    });
   }
 
   contextMenuOpen (args: { rowInfo: { rowIndex: number; cellIndex: number; }; }): void {
@@ -84,10 +94,11 @@ export class AppComponent implements OnInit {
   }
 
   showDialog (): void {
+    let me = this;
     let dialogObj: Dialog = new Dialog({
       width: '335px',
       header: 'Create column',
-      content: '<label>Column Name</label><input type="text" name="columnName">',
+      content: '<input type="text" class="e-input" id="columnName" placeholder="Column name" name="columnName" [(ngModel)]="'+me.columnName+'">',
       target: document.getElementById('target'),
       isModal: true,
       animationSettings: { effect: 'None' },
@@ -103,21 +114,16 @@ export class AppComponent implements OnInit {
       close: dialogClose
     });
     dialogObj.appendTo('#modalDialog');
-    // document.getElementById('dialogBtn').focus();
-
-    // let checkBoxObj: CheckBox = new CheckBox({ checked: false, change: onChange });
-    // checkBoxObj.appendTo('#checkbox');
     dialogObj.show();
-    // Button has been created to open the modal Dialog
-    // let button: Button = new Button({
-    // });
-    // button.appendTo('#dialogBtn');
-    // document.getElementById('dialogBtn').onclick = (): void => {
-    //   dialogObj.show();
-    // };
 
     function dlgButtonClick(): void {
+      // @ts-ignore
+      let val = document.querySelector('input[name="columnName"]')['value'];
       document.getElementById('modalDialog').innerHTML = '';
+      me.http.post('http://localhost:8080/columns', {headerText: val, field: val.replace(/\s/g, "")}).subscribe(data => {
+        me.columns = data;
+        console.log(data);
+      });
       dialogObj.hide();
     }
 
@@ -165,6 +171,11 @@ export class AppComponent implements OnInit {
       case 'delete':
         // @ts-ignore
         this.treegrid.columns.splice(args['column'].index, 1); //Splice columns
+        // @ts-ignore
+        // this.http.post('http://localhost:8080/deleteColumns', {field: args['column']}).subscribe(data => {
+        //   this.columns = data;
+        //   console.log(data);
+        // });
         this.treegrid.refreshColumns(); //Refresh Columns
         break;
       case 'rename':

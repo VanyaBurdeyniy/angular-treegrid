@@ -12,6 +12,7 @@ import { ButtonAllModule , CheckBoxAllModule} from '@syncfusion/ej2-angular-butt
 import { DatePickerModule, DatePickerAllModule } from '@syncfusion/ej2-angular-calendars';
 import { NumericTextBoxAllModule } from '@syncfusion/ej2-angular-inputs';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 
 import { PageService, SortService, FilterService, EditService, FreezeService,
   ExcelExportService, PdfExportService, ContextMenuService, ToolbarService } from '@syncfusion/ej2-angular-treegrid';
@@ -33,7 +34,8 @@ import { AppComponent } from './app.component';
     CheckBoxAllModule,
     ReactiveFormsModule,
     FormsModule,
-    DatePickerModule
+    DatePickerModule,
+    HttpClientModule
   ],
   providers: [PageService, SortService, FilterService, EditService,
     ExcelExportService, PdfExportService, ContextMenuService, TreeGridComponent,
