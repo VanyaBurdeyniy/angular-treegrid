@@ -1,2 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 @import '../node_modules/@syncfusion/ej2-material-theme/styles/material.css';
+
+.selectedRow td {
+  background-color: #ffc0cb63 !important;
+}

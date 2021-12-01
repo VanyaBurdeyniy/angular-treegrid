@@ -2,17 +2,10 @@ import {Component, OnInit, ViewChild} from '@angular/core';
 import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { TreeGridComponent } from '@syncfusion/ej2-angular-treegrid';
 import {  EditSettingsModel } from '@syncfusion/ej2-treegrid';
-import { getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { BeforeOpenCloseEventArgs } from '@syncfusion/ej2-inputs';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { DialogEditEventArgs } from '@syncfusion/ej2-angular-grids';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { Button } from '@syncfusion/ej2-buttons';
-import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { HttpClient } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError, retry } from 'rxjs/operators';
-import {maxWorkers} from "@angular-devkit/build-angular/src/utils/environment-options";
 
 @Component({
   selector: 'app-root',
@@ -36,7 +29,8 @@ export class AppComponent implements OnInit {
   public selectionSettings: any = {};
   public rows: Object[] = [];
   public columns: any = [];
-  public columnName: string;
+  public selectedColumn: any;
+  public selectedRow: any;
   // Cut
   private moveRow: any = null;
 
@@ -47,9 +41,12 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     let me = this;
+    this.http.get('http://localhost:8080/columns').subscribe(data => {
+      me.columns = data;
+    });
     this.dataManager = new DataManager({
       url:
-          'http://185.233.117.219:8080/file',
+          'http://localhost:8080/file',
       // 'https://ej2services.syncfusion.com/production/web-services/api/SelfReferenceData',
       adaptor: new WebApiAdaptor(),
       crossDomain: true,
@@ -58,7 +55,7 @@ export class AppComponent implements OnInit {
     this.filterSettings = { type: 'FilterBar', hierarchyMode: 'Parent', mode: 'Immediate' }
     this.editing = { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Dialog' };
     this.editparams = {params: { format: 'n' }};
-    this.toolbar = ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'ColumnChooser'];
+    // this.toolbar = ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'ColumnChooser'];
     this.selectionSettings = { type: 'Single' };
     this.contextMenuItems= [
       'AddRow',
@@ -70,37 +67,42 @@ export class AppComponent implements OnInit {
       'PrevPage',
       'LastPage',
       'NextPage',
+      'Copy',
+      'Paste',
       { text: 'Freeze Column', target: '.e-headercontent', id: 'freezecol' },
       { text: 'Filter Bar', target: '.e-headercontent', id: 'filterbar' },
       { text: 'Multisort', target: '.e-headercontent', id: 'multisort' },
-      { text: 'New Column', target: '.e-headercontent', id: 'insert' },
-      { text: 'Delete Column', target: '.e-headercontent', id: 'delete' },
-      { text: 'Edit Column', target: '.e-headercontent', id: 'rename' },
+      { text: 'New Column', target: '.e-headercontent', id: 'addColumn' },
+      { text: 'Edit Column', target: '.e-headercontent', id: 'editColumn' },
+      { text: 'Delete Column', target: '.e-headercontent', id: 'deleteColumn' },
       { text: 'Multiselect', target: '.e-content', id: 'multiselectrow' },
       { text: 'Copy', target: '.e-content', id: 'customCopy' },
       { text: 'Cut', target: '.e-content', id: 'customCut' },
       { text: 'Paste', target: '.e-content', id: 'customPaste' }
     ]
-
-    this.http.get('http://185.233.117.219:8080/columns').subscribe(data => {
-      me.columns = data;
-    });
   }
 
-  contextMenuOpen (args: { rowInfo: { rowIndex: number; cellIndex: number; }; }): void {
+  contextMenuOpen (args: {
+    column: any;
+    rowInfo: {
+      rowData: any;
+      row: any;
+      rowIndex: number; cellIndex: number; }; }): void {
+    if (args.rowInfo.row) this.selectedRow = args.rowInfo;
     this.rowIndex = args.rowInfo.rowIndex;
     this.cellIndex = args.rowInfo.cellIndex;
-    console.log(this.treegrid);
+    if (args.column) this.selectedColumn = args.column;
   }
 
-  showDialog (): void {
+  showDialog (headerName: string, placeholder: string, isEdit: boolean): void {
     let me = this;
+    let inputValue = isEdit ? me.selectedColumn.headerText : '';
     let dialogObj: Dialog = new Dialog({
       width: '335px',
-      header: 'Create column',
-      content: '<input type="text" class="e-input" id="columnName" placeholder="Column name" name="columnName" [(ngModel)]="'+me.columnName+'">',
+      header: headerName,
+      content: '<input type="text" class="e-input" id="columnName" ' +
+          'value="'+inputValue+'" placeholder="'+placeholder+'" name="columnName">',
       target: document.getElementById('target'),
-      isModal: true,
       animationSettings: { effect: 'None' },
       buttons: [{
         click: dlgButtonClick,
@@ -120,35 +122,22 @@ export class AppComponent implements OnInit {
       // @ts-ignore
       let val = document.querySelector('input[name="columnName"]')['value'];
       document.getElementById('modalDialog').innerHTML = '';
-      me.http.post('http://185.233.117.219:8080/columns', {headerText: val, field: val.replace(/\s/g, "")}).subscribe(data => {
+      me.columns = [];
+      me.http.post('http://localhost:8080/columns',
+          {headerText: val, field: isEdit ? me.selectedColumn.field : val.replace(/\s/g, ""), isEdit: isEdit, format: 'null'}).subscribe(data => {
         me.columns = data;
-        console.log(data);
+        dialogObj.destroy();
       });
-      dialogObj.hide();
     }
 
     // 'Open' Button will be shown, if modal Dialog is closed
     function dialogClose(): void {
       document.getElementById('modalDialog').innerHTML = '';
-      dialogObj.hide();
+      dialogObj.destroy();
     }
 
     // 'Open' Button will be hidden, if modal Dialog is opened
-    function dialogOpen(): void {
-      // document.getElementById('dialogBtn').style.display = 'none';
-    }
-    // Dialog will be closed, while clicking on overlay
-    // function onChange(args: ChangeEventArgs): void {
-    //   if (args.checked) {
-    //     dialogObj.overlayClick = (): void => {
-    //       dialogObj.hide();
-    //     };
-    //   } else {
-    //     dialogObj.overlayClick = (): void => {
-    //       dialogObj.show();
-    //     };
-    //   }
-    // }
+    function dialogOpen(): void {}
   }
 
   contextMenuClick (args?: MenuEventArgs): void {
@@ -162,26 +151,18 @@ export class AppComponent implements OnInit {
         this.treegrid.grid.allowSorting = !this.treegrid.grid.allowSorting;
         this.treegrid.refresh();
         break;
-      case 'insert':
-        // let columnName = { field: 'New Column', width: 100 };
-        // this.treegrid.columns.push(columnName); // Insert Columns
-        // this.treegrid.refreshColumns(); // Refresh Columns
-          this.showDialog();
+      case 'addColumn':
+          this.showDialog('Create column', 'Column name', false);
         break;
-      case 'delete':
+      case 'deleteColumn':
         // @ts-ignore
-        this.treegrid.columns.splice(args['column'].index, 1); //Splice columns
-        // @ts-ignore
-        // this.http.post('http://localhost:8080/deleteColumns', {field: args['column']}).subscribe(data => {
-        //   this.columns = data;
-        //   console.log(data);
-        // });
+        this.http.post('http://localhost:8080/deleteColumn', {field: this.selectedColumn.field}).subscribe(data => {
+          this.columns = data;
+        });
         this.treegrid.refreshColumns(); //Refresh Columns
         break;
-      case 'rename':
-        this.treegrid.getColumnByField('taskName'); //Get the required column
-        this.treegrid.getColumnByField('taskName').edit(); //Rename column name
-        this.treegrid.refreshColumns(); //Refresh Columns
+      case 'editColumn':
+        this.showDialog('Edit column', 'Column name', true);
         break;
       case 'multiselectrow':
         this.treegrid.grid.selectionSettings.type = (this.treegrid.grid.selectionSettings.type === 'Single') ? 'Multiple' : 'Single';
@@ -194,41 +175,19 @@ export class AppComponent implements OnInit {
         console.log(this.treegrid);
         break;
       case 'customCut':
-        this.moveRow = this.treegrid.grid.selectedRow;
+        this.selectedRow.row.classList.add('selectedRow');
+        this.moveRow = this.selectedRow;
         break;
       case 'customCopy':
-        this.clone = this.treegrid.cloneRow(this.treegrid.grid.selectedRow);
+        this.clone = this.treegrid.copy(this.selectedRow);
         break;
       case 'customPaste':
-        let pasteRow: any = null;
-
-        // Get the row to be pasted
-        // From CUT
-        if (this.moveRow){
-          pasteRow = this.moveRow;
-          this.treegrid.removeRow(pasteRow);
-        }
-        // From COPY
-        else if (this.clone)
-          pasteRow = this.clone;
-
-        // Paste the row at position below the selected row
-        if (pasteRow){
-          let parent: any = this.treegrid.getRowParent(this.treegrid.selectedRow);
-          let list = parent && parent.rows ? parent.rows : this.rows;
-
-          if (list){
-            let index: number = list.indexOf(this.treegrid.selectedRow);
-            if (index >= 0)
-              this.treegrid.insertRowAt(pasteRow, index+1, parent);
-          }
-        }
-
+        var rowIndex = this.selectedRow.rowIndex;
+        var cellIndex = this.cellIndex;
+        var copyContent = this.treegrid.clipboardModule.copyContent;
+        this.treegrid.paste(copyContent, rowIndex, cellIndex);
         this.treegrid.clearSelection();
         this.treegrid.refresh();
-
-        this.moveRow = null;
-        this.clone = null;
         break;
     }
   }

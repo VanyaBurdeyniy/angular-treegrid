@@ -1,4 +1,4 @@
-<ejs-treegrid
+<div *ngIf="columns.length"><ejs-treegrid
         [dataSource]="dataManager" hasChildMapping="isParent"
         [treeColumnIndex]="1" parentIdMapping="ParentItem" idMapping="TaskID"
         [contextMenuItems]='contextMenuItems'
@@ -7,17 +7,13 @@
         allowReordering="true"
         allowResizing="true"
         [showColumnChooser]='true'
-        [toolbar]='toolbar' (actionComplete)="actionComplete($event)"
+        (actionComplete)="actionComplete($event)"
         allowSorting="true"
         [selectionSettings]="selectionSettings"
         allowRowDragAndDrop="true"
+        [columns]="columns"
         height='100%' width='100%'>
-  <e-columns>
-    <e-column *ngFor="let column of columns" field="{{column.field}}" headerText="{{column.headerText}}" width="100" textAlign="Left" isPrimaryKey="false"></e-column>
-<!--    <e-column field="TaskName" headerText="Task Name" width="170"></e-column>-->
-<!--    <e-column field="StartDate" headerText="Start Date" width="130" format="yMd" textAlign="Right"></e-column>-->
-<!--    <e-column field="Duration" headerText="Duration" width="80" textAlign="Right"></e-column>-->
-  </e-columns>
 </ejs-treegrid>
+</div>
 <div id="modalDialog">
 </div>
