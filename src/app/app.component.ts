@@ -41,12 +41,12 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     let me = this;
-    this.http.get('http://localhost:8080/columns').subscribe(data => {
+    this.http.get('http://localhost:9000/columns').subscribe(data => {
       me.columns = data;
     });
     this.dataManager = new DataManager({
       url:
-          'http://localhost:8080/file',
+          'http://localhost:9000/file',
       // 'https://ej2services.syncfusion.com/production/web-services/api/SelfReferenceData',
       adaptor: new WebApiAdaptor(),
       crossDomain: true,
@@ -123,7 +123,7 @@ export class AppComponent implements OnInit {
       let val = document.querySelector('input[name="columnName"]')['value'];
       document.getElementById('modalDialog').innerHTML = '';
       me.columns = [];
-      me.http.post('http://localhost:8080/columns',
+      me.http.post('http://localhost:9000/columns',
           {headerText: val, field: isEdit ? me.selectedColumn.field : val.replace(/\s/g, ""), isEdit: isEdit, format: 'null'}).subscribe(data => {
         me.columns = data;
         dialogObj.destroy();
@@ -156,7 +156,7 @@ export class AppComponent implements OnInit {
         break;
       case 'deleteColumn':
         // @ts-ignore
-        this.http.post('http://localhost:8080/deleteColumn', {field: this.selectedColumn.field}).subscribe(data => {
+        this.http.post('http://localhost:9000/deleteColumn', {field: this.selectedColumn.field}).subscribe(data => {
           this.columns = data;
         });
         this.treegrid.refreshColumns(); //Refresh Columns
